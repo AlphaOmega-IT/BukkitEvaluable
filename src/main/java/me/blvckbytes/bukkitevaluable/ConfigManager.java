@@ -37,6 +37,7 @@ import me.blvckbytes.utilitytypes.Tuple;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -47,7 +48,7 @@ public class ConfigManager implements IConfigManager, IValueConverterRegistry {
   private static final String EXPRESSION_MARKER_SUFFIX = "$";
 
   private final Map<String, Tuple<IExpressionEvaluator, IConfigMapper>> mapperByPath;
-  private final Logger logger;
+  private final Logger       logger;
   private final IFileHandler fileHandler;
 
   private final AExpressionFunction
@@ -122,7 +123,7 @@ public class ConfigManager implements IConfigManager, IValueConverterRegistry {
         throw new IllegalStateException("Could not load resource file at " + path);
 
       try (
-        InputStreamReader resourceReader = new InputStreamReader(resourceStream);
+        InputStreamReader resourceReader = new InputStreamReader(resourceStream, StandardCharsets.UTF_8);
       ) {
         YamlConfig resourceConfig = new YamlConfig(null, this.logger, null);
         resourceConfig.load(resourceReader);
@@ -164,7 +165,7 @@ public class ConfigManager implements IConfigManager, IValueConverterRegistry {
       YamlConfig config = new YamlConfig(evaluator, this.logger, EXPRESSION_MARKER_SUFFIX);
 
       try (
-        InputStreamReader streamReader = new InputStreamReader(inputStream);
+				InputStreamReader streamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
       ) {
         config.load(streamReader);
       }

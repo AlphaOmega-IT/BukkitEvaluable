@@ -32,6 +32,10 @@ import me.blvckbytes.bbconfigmapper.ScalarType;
 import me.blvckbytes.gpeee.IExpressionEvaluator;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
 import me.blvckbytes.utilitytypes.FUnsafeTriFunction;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -61,8 +65,8 @@ public class BukkitEvaluable extends ConfigValue {
     return new BukkitEvaluable(value, null);
   }
 
-  public TextComponent asTextComponent(IEvaluationEnvironment environment) {
-    return new TextComponent(asString(environment));
+  public Component asTextComponent(IEvaluationEnvironment environment) {
+    return MiniMessage.miniMessage().deserialize(asString(environment));
   }
 
   public @Nullable XMaterial asXMaterial(IEvaluationEnvironment environment) {
@@ -239,7 +243,7 @@ public class BukkitEvaluable extends ConfigValue {
       try {
         List<Field> constants = Arrays.stream(type.getDeclaredFields())
           .filter(field -> field.getType().equals(type) && Modifier.isStatic(field.getModifiers()))
-          .collect(Collectors.toList());
+          .toList();
 
         for (Field constant : constants) {
           if (!constant.getName().toLowerCase().equals(value))

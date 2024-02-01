@@ -25,6 +25,8 @@
 package me.blvckbytes.bukkitevaluable.section;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
@@ -36,6 +38,7 @@ import me.blvckbytes.bukkitevaluable.EPatchFlag;
 import me.blvckbytes.bukkitevaluable.IItemBuildable;
 import me.blvckbytes.bukkitevaluable.ItemBuilder;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -184,14 +187,14 @@ public class ItemStackSection implements IConfigSection {
     }
 
     if (name != null) {
-      if (!name.asScalar(ScalarType.STRING, environment).equals(meta.getDisplayName())) {
+      if (!name.asScalar(ScalarType.TEXT_COMPONENT, environment).equals(meta.displayName())) {
         if (addMismatchAndPossiblyBreak(ComparisonMismatch.DISPLAY_NAME_MISMATCH, mismatches, nonBreakers))
           return mismatches;
       }
     }
 
     if (lore != null) {
-      if (doCollectionsDiffer(lore.asList(ScalarType.STRING, environment), meta.getLore())) {
+      if (doCollectionsDiffer(lore.asList(ScalarType.TEXT_COMPONENT, environment), meta.lore())) {
         if (addMismatchAndPossiblyBreak(ComparisonMismatch.LORE_MISMATCH, mismatches, nonBreakers))
           return mismatches;
       }
@@ -379,24 +382,21 @@ public class ItemStackSection implements IConfigSection {
     String texturesValue = textures.asScalar(ScalarType.STRING, environment);
 
     try {
-      Field profileField = meta.getClass().getDeclaredField("profile");
-      profileField.setAccessible(true);
-      GameProfile profile = (GameProfile) profileField.get(owner);
-      PropertyMap pm = profile.getProperties();
-      Collection<Property> targets = pm.get("textures");
+			final PlayerProfile playerProfile = Bukkit.createProfile(
+				owner.getUniqueId(),
+				owner.getName()
+			);
 
-      // Does not contain any textures
-      if (targets.size() == 0)
-        return false;
-
-      for (Property target : targets) {
-        if (target.getValue().equals(texturesValue))
-          return true;
-      }
+      playerProfile.setProperty(
+				new ProfileProperty(
+					"textures",
+					texturesValue
+				)
+			);
+			return true;
     } catch (Exception e) {
       e.printStackTrace();
     }
-
     return false;
   }
 

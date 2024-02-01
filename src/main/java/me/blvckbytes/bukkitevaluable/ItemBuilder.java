@@ -25,6 +25,8 @@
 package me.blvckbytes.bukkitevaluable;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.destroystokyo.paper.profile.PlayerProfile;
+import com.destroystokyo.paper.profile.ProfileProperty;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import me.blvckbytes.bbconfigmapper.ScalarType;
@@ -32,6 +34,10 @@ import me.blvckbytes.bukkitevaluable.section.*;
 import me.blvckbytes.gpeee.GPEEE;
 import me.blvckbytes.utilitytypes.Tuple;
 import me.blvckbytes.gpeee.interpreter.IEvaluationEnvironment;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.apache.maven.model.Profile;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.block.banner.Pattern;
@@ -315,26 +321,26 @@ public class ItemBuilder implements IItemBuildable {
 
     //////////////////////////////// Display name ////////////////////////////////
 
-    if (name != null)
-      resMeta.setDisplayName(name.asScalar(ScalarType.STRING, environment));
+    if (this.name != null)
+			resMeta.displayName(MiniMessage.miniMessage().deserialize(this.name.asScalar(ScalarType.STRING, environment)));
 
     /////////////////////////////////// Lore ///////////////////////////////////
 
     if (loreOverride)
-      resMeta.setLore(null);
+      resMeta.lore(null);
 
-    if (loreBlocks.size() > 0) {
+    if (! loreBlocks.isEmpty()) {
       // Get old lore lines to extend, if applicable
-      List<String> lines = resMeta.getLore();
+      final List<Component> lines = resMeta.lore() == null ? new ArrayList<>() :
+																		resMeta.lore();
 
-      if (lines == null)
-        lines = new ArrayList<>();
 
       // Extend by new lore lines
-      for (BukkitEvaluable line : loreBlocks)
-        lines.addAll(line.asList(ScalarType.STRING, environment));
+      for (BukkitEvaluable line : loreBlocks) {
+				line.asList(ScalarType.STRING, environment).forEach(lineline -> lines.add(MiniMessage.miniMessage().deserialize(lineline.toString())));
+			}
 
-      resMeta.setLore(lines);
+      resMeta.lore(lines);
     }
 
     /////////////////////////////////// Color //////////////////////////////////
@@ -536,8 +542,13 @@ public class ItemBuilder implements IItemBuildable {
    * @param textures Texture value
    */
   private void applyTextures(ItemMeta meta, String textures) {
-    GameProfile prof = new GameProfile(UUID.randomUUID(), "");
-    prof.getProperties().put("textures", new Property("textures", textures));
+    PlayerProfile prof = Bukkit.createProfile(UUID.randomUUID());
+		prof.setProperty(
+			new ProfileProperty(
+				"textures",
+				textures
+			)
+		);
     applyHeadProfile(meta, prof);
   }
 
@@ -554,35 +565,10 @@ public class ItemBuilder implements IItemBuildable {
    * Sets the head game profile of the item-meta
    * @param profile Game profile to set
    */
-  private void applyHeadProfile(ItemMeta meta, GameProfile profile) {
-    if (!(meta instanceof SkullMeta))
+  private void applyHeadProfile(ItemMeta meta, PlayerProfile profile) {
+    if (!(meta instanceof SkullMeta skullMeta))
       return;
 
-    // Try to find the setProfile method
-    Method setProfileMethod = null;
-    try {
-      setProfileMethod = meta.getClass().getDeclaredMethod("setProfile", GameProfile.class);
-    } catch (Exception ignored) {}
-
-    try {
-      // if available, we use setProfile(GameProfile) so that it sets both the profile field and the
-      // serialized profile field for us. If the serialized profile field isn't set
-      // ItemStack#isSimilar() and ItemStack#equals() throw an error.
-
-      // If setProfile is available, this is the preferred method, as it will also set
-      // the serialized profile field without which bukkit will panic on ItemStack#isSimilar() or ItemStack#equals()
-      if (setProfileMethod != null) {
-        setProfileMethod.setAccessible(true);
-        setProfileMethod.invoke(meta, profile);
-        return;
-      }
-
-      // Method unavailable, just set the GameProfile field
-      Field profileField = meta.getClass().getDeclaredField("profile");
-      profileField.setAccessible(true);
-      profileField.set(meta, profile);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+		skullMeta.setPlayerProfile(profile);
   }
 }

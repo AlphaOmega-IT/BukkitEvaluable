@@ -2,6 +2,15 @@
 
 # BukkitEvaluable
 
+## maven
+```xml
+  <dependency>
+    <groupId>de.alphaomega-it.bukkitevaluable</groupId>
+    <artifactId>BukkitEvaluable</artifactId>
+    <version>1.0</version>
+  </dependency>
+```
+
 A wrapper on [BBConfigMapper](https://github.com/BlvckBytes/BBConfigMapper), which manages configuration
 instances and adds value converters, like the item-buildable as well as the bukkit-evaluable itself, which provides
 many bukkit type interpretations and support for the use of `&`-colors.

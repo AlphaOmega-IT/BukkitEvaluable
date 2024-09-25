@@ -78,7 +78,7 @@
         <dependency>
             <groupId>de.alphaomega-it.bbconfigmapper</groupId>
             <artifactId>BBConfigMapper</artifactId>
-            <version>1.1</version>
+            <version>1.2</version>
 	        <exclusions>
 		        <exclusion>
 			        <groupId>de.alphaomega-it.gpeee</groupId>
@@ -116,8 +116,8 @@
             <version>11.2.2</version>
         </dependency>
         <dependency>
-            <groupId>de.alphaomega-it.utilitytypes</groupId>
-            <artifactId>UtilityTypes</artifactId>
+            <groupId>de.alphaomega-it.bukkitboilerplate</groupId>
+            <artifactId>BukkitBoilerPlate</artifactId>
             <version>1.1</version>
             <scope>compile</scope>
         </dependency>
